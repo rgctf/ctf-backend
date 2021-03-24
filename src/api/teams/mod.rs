@@ -1,10 +1,10 @@
 use actix_web::web;
 
-mod teams;
+// mod endpoint;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/")
-            .service(web::scope("/teams").configure(teams::config)),
+            // .service(web::scope("/endpoint").configure(endpoint::config)),
     );
 }
