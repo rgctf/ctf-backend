@@ -8,7 +8,9 @@ use std::{env, path::PathBuf};
 
 // use actix_cors::Cors;
 use actix_files::{Files, NamedFile};
-use actix_web::{web, App, HttpRequest, HttpServer, Result};
+use actix_web::{web, App, HttpRequest, HttpServer, Result as ActixResult};
+use anyhow::{Context, Result};
+use butane::db::{Connection, ConnectionSpec};
 
 fn get_env_with_dev_default(key: &'static str, default: &'static str) -> String {
     env::var(key)
@@ -34,12 +36,22 @@ lazy_static! {
     static ref APP_ADDR: String = format!("{}:{}", *APP_HOST, *APP_PORT);
 }
 
-async fn index(_: HttpRequest) -> Result<NamedFile> {
+async fn index(_: HttpRequest) -> ActixResult<NamedFile> {
     Ok(NamedFile::open(FRONTEND_PATH.join("index.html"))?)
 }
 
+fn db_connect() -> Result<Connection> {
+    let connection = butane::db::connect(
+        &ConnectionSpec::load(".butane/connection.json")
+            .context("missing database connection configuration")?,
+    )
+    .context("failed to connect to database")?;
+
+    Ok(connection)
+}
+
 #[actix_rt::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<()> {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("trace")).init();
 
     HttpServer::new(move || {
@@ -52,6 +64,7 @@ async fn main() -> std::io::Result<()> {
             //         .allowed_header(http::header::CONTENT_TYPE)
             //         .finish(),
             // )
+            .data(db_connect)
             .service(web::scope("/api").configure(api::config))
             .service(
                 Files::new("", FRONTEND_PATH.clone())
@@ -61,5 +74,7 @@ async fn main() -> std::io::Result<()> {
     })
     .bind(APP_ADDR.clone())?
     .run()
-    .await
+    .await?;
+
+    Ok(())
 }
