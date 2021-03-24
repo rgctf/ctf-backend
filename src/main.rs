@@ -2,6 +2,7 @@
 extern crate lazy_static;
 
 mod api;
+mod models;
 
 use std::{env, path::PathBuf};
 
