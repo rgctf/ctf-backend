@@ -7,19 +7,19 @@ use crate::{
 };
 
 pub fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::resource("/").route(web::get().to(get)));
+    cfg.service(web::resource("/").route(web::get().to(index)));
 }
 
-async fn get(
-    web::Path(id): web::Path<String>,
+async fn index(
+    web::Path(event_id): web::Path<String>,
     db: web::Data<Connection>,
 ) -> Result<impl Responder, ApiError> {
-    let event = Event::get(db.as_ref(), &id)?;
+    let event = Event::get(db.as_ref(), &event_id)?;
 
     // FIXME: Ensure that the requester has permission to view this event's challenges.
 
     // TODO: These should map to an actual challenge model rather than just names.
-    let challenges = query!(EventChallenge, event == { id })
+    let challenges = query!(EventChallenge, event == { event_id })
         .load(db.as_ref())?
         .iter()
         .map(|challenge| challenge.id.clone())

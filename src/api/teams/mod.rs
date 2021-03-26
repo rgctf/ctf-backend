@@ -22,10 +22,10 @@ fn generate_token<R: Rng + CryptoRng + ?Sized>(rng: &mut R) -> String {
 }
 
 async fn get(
-    web::Path(id): web::Path<i32>,
+    web::Path(team_id): web::Path<i32>,
     db: web::Data<Connection>,
 ) -> Result<impl Responder, ApiError> {
-    let team = Team::get(db.as_ref(), &id)?;
+    let team = Team::get(db.as_ref(), &team_id)?;
 
     let resp_team: backend_models::Team = team.into();
     Ok(HttpResponse::Ok().json(&resp_team))
