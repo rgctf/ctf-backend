@@ -12,6 +12,7 @@ actix-web = "3.3.2"
 anyhow = "1.0.39"
 backend-models = { path = "models" }
 butane = { version = "0.2.1", features = ["default", "pg"] }
+chrono = "0.4.19"
 env_logger = "0.8.3"
 http = "0.2.3"
 lazy_static = "1.4.0"
@@ -22,3 +23,9 @@ thiserror = "1.0.24"
 
 [dev-dependencies]
 actix-http = "2.2.0"
+
+[workspace]
+resolver = '2'
+members = [
+    "models",
+]

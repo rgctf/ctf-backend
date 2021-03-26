@@ -7,11 +7,8 @@ use rand::prelude::*;
 use crate::{api::ApiError, models::Team};
 
 pub fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(
-        web::resource("/")
-            .route(web::get().to(get_team))
-            .route(web::post().to(create_team)),
-    );
+    cfg.service(web::resource("/").route(web::post().to(create)))
+        .service(web::resource("/{team_id}").route(web::get().to(get)));
 }
 
 fn generate_token<R: Rng + CryptoRng + ?Sized>(rng: &mut R) -> String {
@@ -24,21 +21,21 @@ fn generate_token<R: Rng + CryptoRng + ?Sized>(rng: &mut R) -> String {
         .collect()
 }
 
-async fn get_team(
-    web::Path(id): web::Path<i64>,
+async fn get(
+    web::Path(id): web::Path<i32>,
     db: web::Data<Connection>,
 ) -> Result<impl Responder, ApiError> {
-    let team = Team::get(db.as_ref(), id)?;
+    let team = Team::get(db.as_ref(), &id)?;
 
     let resp_team: backend_models::Team = team.into();
     Ok(HttpResponse::Ok().json(&resp_team))
 }
 
-async fn create_team(
-    name: web::Json<String>,
+async fn create(
+    details: web::Json<backend_models::TeamRegisterRequest>,
     db: web::Data<Connection>,
 ) -> Result<impl Responder, ApiError> {
-    let name = name.clone();
+    let backend_models::TeamRegisterRequest { name } = details.into_inner();
 
     let existing_team = query!(Team, name == { name }).load_first(db.as_ref())?;
 

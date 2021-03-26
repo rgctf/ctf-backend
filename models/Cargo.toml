@@ -8,4 +8,5 @@ edition = "2018"
 default = ["serde"]
 
 [dependencies]
+chrono = "0.4.19"
 serde = { version = "1.0", features = ["derive"], optional = true }
