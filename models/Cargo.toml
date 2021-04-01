@@ -5,7 +5,8 @@ authors = []
 edition = "2018"
 
 [features]
-default = ["serde"]
+default = ["enable-serde"]
+enable-serde = ["serde", "chrono/serde"]
 
 [dependencies]
 chrono = "0.4.19"
